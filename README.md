@@ -78,6 +78,15 @@ cd flink
 mvn clean package -DskipTests # this will take up to 10 minutes
 ```
 
+```
+Flink源码编译
+https://nightlies.apache.org/flink/flink-docs-release-1.15/zh/docs/flinkdev/building/
+mvn clean install -DskipTests -Dfast -Pskip-webui-build -T 1C
+
+mvn clean install -DskipTests -Dfast -T 1C
+mvn clean install -DskipTests -Dscala-2.12
+```
+
 Flink is now installed in `build-target`.
 
 *NOTE: Maven 3.3.x can build Flink, but will not properly shade away certain dependencies. Maven 3.1.1 creates the libraries properly.
