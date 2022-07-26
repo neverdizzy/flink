@@ -24,6 +24,7 @@ import org.apache.flink.configuration.ConfigOptions;
 import org.apache.flink.configuration.Configuration;
 import org.apache.flink.configuration.ReadableConfig;
 import org.apache.flink.connector.base.DeliveryGuarantee;
+import org.apache.flink.streaming.connectors.kafka.config.EndupMode;
 import org.apache.flink.streaming.connectors.kafka.config.StartupMode;
 import org.apache.flink.streaming.connectors.kafka.internals.KafkaTopicPartition;
 import org.apache.flink.streaming.connectors.kafka.partitioner.FlinkFixedPartitioner;
@@ -56,6 +57,7 @@ import static org.apache.flink.streaming.connectors.kafka.table.KafkaConnectorOp
 import static org.apache.flink.streaming.connectors.kafka.table.KafkaConnectorOptions.KEY_FIELDS;
 import static org.apache.flink.streaming.connectors.kafka.table.KafkaConnectorOptions.KEY_FIELDS_PREFIX;
 import static org.apache.flink.streaming.connectors.kafka.table.KafkaConnectorOptions.KEY_FORMAT;
+import static org.apache.flink.streaming.connectors.kafka.table.KafkaConnectorOptions.SCAN_ENDUP_TIMESTAMP_MILLIS;
 import static org.apache.flink.streaming.connectors.kafka.table.KafkaConnectorOptions.SCAN_STARTUP_MODE;
 import static org.apache.flink.streaming.connectors.kafka.table.KafkaConnectorOptions.SCAN_STARTUP_SPECIFIC_OFFSETS;
 import static org.apache.flink.streaming.connectors.kafka.table.KafkaConnectorOptions.SCAN_STARTUP_TIMESTAMP_MILLIS;
@@ -242,6 +244,30 @@ class KafkaConnectorOptionsUtil {
         return options;
     }
 
+    public static EndupOptions getEndupOptions(ReadableConfig tableOptions) {
+        final Map<KafkaTopicPartition, Long> specificOffsets = new HashMap<>();
+        final EndupMode endupMode =
+                tableOptions
+                        .getOptional(KafkaConnectorOptions.SCAN_ENDUP_MODE)
+                        .map(KafkaConnectorOptionsUtil::endfromOption)
+                        .orElse(EndupMode.GROUP_OFFSETS);
+        // TODO 需要创建一个获取结束偏移位置的方法
+        if (endupMode == EndupMode.SPECIFIC_OFFSETS) {
+            // It will be refactored after support specific offset for multiple topics in
+            // FLINK-18602. We have already checked tableOptions.get(TOPIC) contains one topic in
+            // validateScanStartupMode().
+            buildSpecificOffsets(tableOptions, tableOptions.get(TOPIC).get(0), specificOffsets);
+        }
+
+        final EndupOptions options = new EndupOptions();
+        options.endupMode = endupMode;
+        options.specificOffsets = specificOffsets;
+        if (endupMode == EndupMode.TIMESTAMP) {
+            options.endupTimestampMillis = tableOptions.get(SCAN_ENDUP_TIMESTAMP_MILLIS);
+        }
+        return options;
+    }
+
     private static void buildSpecificOffsets(
             ReadableConfig tableOptions,
             String topic,
@@ -277,6 +303,23 @@ class KafkaConnectorOptionsUtil {
             default:
                 throw new TableException(
                         "Unsupported startup mode. Validator should have checked that.");
+        }
+    }
+
+    private static EndupMode endfromOption(KafkaConnectorOptions.ScanEndupMode scanEndupMode) {
+        switch (scanEndupMode) {
+            case LATEST_OFFSET:
+                return EndupMode.LATEST;
+            case GROUP_OFFSETS:
+                return EndupMode.GROUP_OFFSETS;
+            case SPECIFIC_OFFSETS:
+                return EndupMode.SPECIFIC_OFFSETS;
+            case TIMESTAMP:
+                return EndupMode.TIMESTAMP;
+
+            default:
+                throw new TableException(
+                        "Unsupported endup mode. Validator should have checked that.");
         }
     }
 
@@ -579,6 +622,12 @@ class KafkaConnectorOptionsUtil {
         public StartupMode startupMode;
         public Map<KafkaTopicPartition, Long> specificOffsets;
         public long startupTimestampMillis;
+    }
+
+    public static class EndupOptions {
+        public EndupMode endupMode;
+        public Map<KafkaTopicPartition, Long> specificOffsets;
+        public long endupTimestampMillis;
     }
 
     private KafkaConnectorOptionsUtil() {}

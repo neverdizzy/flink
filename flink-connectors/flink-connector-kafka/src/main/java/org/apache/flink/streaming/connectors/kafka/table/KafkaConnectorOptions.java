@@ -142,7 +142,7 @@ public class KafkaConnectorOptions {
                             "Required consumer group in Kafka consumer, no need for Kafka producer");
 
     // --------------------------------------------------------------------------------------------
-    // Scan specific options
+    // Scan start specific options
     // --------------------------------------------------------------------------------------------
 
     public static final ConfigOption<ScanStartupMode> SCAN_STARTUP_MODE =
@@ -171,6 +171,29 @@ public class KafkaConnectorOptions {
                     .noDefaultValue()
                     .withDescription(
                             "Optional interval for consumer to discover dynamically created Kafka partitions periodically.");
+
+    // --------------------------------------------------------------------------------------------
+    // Scan end specific options
+    // --------------------------------------------------------------------------------------------
+
+    public static final ConfigOption<ScanEndupMode> SCAN_ENDUP_MODE =
+            ConfigOptions.key("scan.endup.mode")
+                    .enumType(ScanEndupMode.class)
+                    .defaultValue(ScanEndupMode.GROUP_OFFSETS)
+                    .withDescription("Endup mode for Kafka consumer.");
+
+    public static final ConfigOption<String> SCAN_ENDUP_SPECIFIC_OFFSETS =
+            ConfigOptions.key("scan.endup.specific-offsets")
+                    .stringType()
+                    .noDefaultValue()
+                    .withDescription(
+                            "Optional offsets used in case of \"specific-offsets\" endup mode");
+
+    public static final ConfigOption<Long> SCAN_ENDUP_TIMESTAMP_MILLIS =
+            ConfigOptions.key("scan.endup.timestamp-millis")
+                    .longType()
+                    .noDefaultValue()
+                    .withDescription("Optional timestamp used in case of \"timestamp\" endup mode");
 
     // --------------------------------------------------------------------------------------------
     // Sink specific options
@@ -276,6 +299,37 @@ public class KafkaConnectorOptions {
         private final InlineElement description;
 
         ScanStartupMode(String value, InlineElement description) {
+            this.value = value;
+            this.description = description;
+        }
+
+        @Override
+        public String toString() {
+            return value;
+        }
+
+        @Override
+        public InlineElement getDescription() {
+            return description;
+        }
+    }
+
+    /** Endup mode for the Kafka consumer, see {@link #SCAN_ENDUP_MODE}. */
+    public enum ScanEndupMode implements DescribedEnum {
+        LATEST_OFFSET("latest-offset", text("End from the latest offset.")),
+        GROUP_OFFSETS(
+                "group-offsets",
+                text(
+                        "End from committed offsets in ZooKeeper / Kafka brokers of a specific consumer group.")),
+        TIMESTAMP("timestamp", text("End from user-supplied timestamp for each partition.")),
+        SPECIFIC_OFFSETS(
+                "specific-offsets",
+                text("End from user-supplied specific offsets for each partition."));
+
+        private final String value;
+        private final InlineElement description;
+
+        ScanEndupMode(String value, InlineElement description) {
             this.value = value;
             this.description = description;
         }
