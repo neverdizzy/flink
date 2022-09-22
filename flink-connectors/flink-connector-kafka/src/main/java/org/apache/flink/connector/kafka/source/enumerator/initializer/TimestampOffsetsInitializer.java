@@ -18,8 +18,12 @@
 
 package org.apache.flink.connector.kafka.source.enumerator.initializer;
 
+import org.apache.flink.connector.kafka.source.enumerator.KafkaSourceEnumerator;
+
 import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.TopicPartition;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +37,8 @@ import java.util.Map;
 class TimestampOffsetsInitializer implements OffsetsInitializer {
     private static final long serialVersionUID = 2932230571773627233L;
     private final long startingTimestamp;
+
+    private static final Logger LOG = LoggerFactory.getLogger(KafkaSourceEnumerator.class);
 
     TimestampOffsetsInitializer(long startingTimestamp) {
         this.startingTimestamp = startingTimestamp;
@@ -59,10 +65,12 @@ class TimestampOffsetsInitializer implements OffsetsInitializer {
                         (tp, offsetMetadata) -> {
                             if (offsetMetadata != null) {
                                 initialOffsets.put(tp, offsetMetadata.offset());
+                                LOG.info("getPartitionOffsets TopicPartition: {}, offsetMetadata.offset(): {}", tp.toString(), offsetMetadata.offset());
                             } else {
                                 // The timestamp does not exist in the partition yet, we will just
                                 // consume from the latest.
                                 initialOffsets.put(tp, endOffsets.get(tp));
+                                LOG.info("getPartitionOffsets TopicPartition: {}, endOffsets.get(tp): {}", tp.toString(), endOffsets.get(tp));
                             }
                         });
         return initialOffsets;
@@ -70,6 +78,7 @@ class TimestampOffsetsInitializer implements OffsetsInitializer {
 
     @Override
     public OffsetResetStrategy getAutoOffsetResetStrategy() {
-        return OffsetResetStrategy.NONE;
+        // return OffsetResetStrategy.NONE;
+        return OffsetResetStrategy.LATEST;
     }
 }

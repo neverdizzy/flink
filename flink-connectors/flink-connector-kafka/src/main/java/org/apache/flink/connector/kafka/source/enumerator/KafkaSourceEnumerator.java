@@ -281,7 +281,13 @@ public class KafkaSourceEnumerator
             Long startingOffset = startingOffsets.get(tp);
             long stoppingOffset =
                     stoppingOffsets.getOrDefault(tp, KafkaPartitionSplit.NO_STOPPING_OFFSET);
-            partitionSplits.add(new KafkaPartitionSplit(tp, startingOffset, stoppingOffset));
+
+            LOG.info("initializePartitionSplits === startingOffset: {}, stoppingOffset: {}", startingOffset, stoppingOffset);
+            if (stoppingOffset > 0 && startingOffset != stoppingOffset) {
+                partitionSplits.add(new KafkaPartitionSplit(tp, startingOffset, stoppingOffset));
+            } else {
+                LOG.info("initializePartitionSplits  startingOffset: {}, stoppingOffset: {}", startingOffset, stoppingOffset);
+            }
         }
         return new PartitionSplitChange(partitionSplits, partitionChange.getRemovedPartitions());
     }
