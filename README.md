@@ -85,6 +85,8 @@ mvn clean install -DskipTests -Dfast -Pskip-webui-build -T 1C
 
 mvn clean install -DskipTests -Dfast -T 1C
 mvn clean install -DskipTests -Dscala-2.12
+
+mvn clean install -DskipTests -Dfast -T 1C -Dscala-2.12
 ```
 
 Flink is now installed in `build-target`.
