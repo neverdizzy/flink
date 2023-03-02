@@ -49,6 +49,69 @@ under the License.
 		<developerConnection>scm:git:https://gitbox.apache.org/repos/asf/flink.git</developerConnection>
 	</scm>
 
+<!--	<repositories>-->
+<!--		<repository>-->
+<!--			<id>repository.jboss.org</id>-->
+<!--			<url>http://repository.jboss.org/nexus/content/groups/public/</url>-->
+<!--			<snapshots>-->
+<!--				<enabled>false</enabled>-->
+<!--			</snapshots>-->
+<!--			<releases>-->
+<!--				<enabled>false</enabled>-->
+<!--			</releases>-->
+<!--		</repository>-->
+<!--	</repositories>-->
+
+	<repositories>
+		<repository>
+			<id>alimaven</id>
+			<name>aliyun maven</name>
+			<url>http://maven.aliyun.com/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>alimaven-spring</id>
+			<name>aliyun maven</name>
+			<url>https://maven.aliyun.com/repository/spring</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>Maven Central</id>
+			<name>Maven Repository</name>
+			<url>https://repo.maven.apache.org/maven2</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>cloudera-repo-releases</id>
+			<url>https://repository.cloudera.com/artifactory/cloudera-repos/</url>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>confluent</id>
+			<url>https://packages.confluent.io/maven/</url>
+		</repository>
+	</repositories>
+
 	<modules>
 		<module>flink-annotations</module>
 		<module>flink-core</module>
