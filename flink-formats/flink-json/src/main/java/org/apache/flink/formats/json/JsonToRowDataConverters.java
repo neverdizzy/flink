@@ -48,15 +48,19 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.lang.reflect.Array;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneOffset;
 import java.time.temporal.TemporalAccessor;
 import java.time.temporal.TemporalQueries;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import static java.time.format.DateTimeFormatter.ISO_LOCAL_DATE;
 import static org.apache.flink.formats.common.TimeFormats.ISO8601_TIMESTAMP_FORMAT;
@@ -222,7 +226,19 @@ public class JsonToRowDataConverters implements Serializable {
         TemporalAccessor parsedTimestamp;
         switch (timestampFormat) {
             case SQL:
-                parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(jsonNode.asText());
+                Objects.requireNonNull(jsonNode.asText(), "text");
+                String data;
+                if (jsonNode.asText().length() == 10) {
+                    SimpleDateFormat SDF_YYYYMMDDHHMMSS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE);
+                    data=SDF_YYYYMMDDHHMMSS.format(new Date(Long.valueOf(jsonNode.asText())*1000));
+                    parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(data);
+                } else if (jsonNode.asText().length() == 13) {
+                    SimpleDateFormat SDF_YYYYMMDDHHMMSS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE);
+                    data=SDF_YYYYMMDDHHMMSS.format(new Date(Long.valueOf(jsonNode.asText())));
+                    parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(data);
+                } else {
+                    parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(jsonNode.asText());
+                }
                 break;
             case ISO_8601:
                 parsedTimestamp = ISO8601_TIMESTAMP_FORMAT.parse(jsonNode.asText());
