@@ -227,15 +227,14 @@ public class JsonToRowDataConverters implements Serializable {
         switch (timestampFormat) {
             case SQL:
                 Objects.requireNonNull(jsonNode.asText(), "text");
-                String data;
                 if (jsonNode.asText().length() == 10) {
                     SimpleDateFormat SDF_YYYYMMDDHHMMSS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE);
-                    data=SDF_YYYYMMDDHHMMSS.format(new Date(Long.valueOf(jsonNode.asText())*1000));
-                    parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(data);
+                    String omsTimestampValue = SDF_YYYYMMDDHHMMSS.format(new Date(Long.valueOf(jsonNode.asText())*1000));
+                    parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(omsTimestampValue);
                 } else if (jsonNode.asText().length() == 13) {
                     SimpleDateFormat SDF_YYYYMMDDHHMMSS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.SIMPLIFIED_CHINESE);
-                    data=SDF_YYYYMMDDHHMMSS.format(new Date(Long.valueOf(jsonNode.asText())));
-                    parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(data);
+                    String omsTimestampValue=SDF_YYYYMMDDHHMMSS.format(new Date(Long.valueOf(jsonNode.asText())));
+                    parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(omsTimestampValue);
                 } else {
                     parsedTimestamp = SQL_TIMESTAMP_FORMAT.parse(jsonNode.asText());
                 }
